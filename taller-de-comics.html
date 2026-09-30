@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Taller de Cómics</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6eaff;--ink:#16161d;--card:#fff;--acc:#ff3d7f;--sun:#ffd23f;--mut:#5b5b6b;--bd:#16161d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14141d;--ink:#f3f3f8;--card:#22222f;--mut:#a5a5b8;--bd:#f3f3f8}}
+:root[data-theme="dark"]{--bg:#14141d;--ink:#f3f3f8;--card:#22222f;--mut:#a5a5b8;--bd:#f3f3f8}
+*{box-sizing:inherit}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,sans-serif;background-image:radial-gradient(#7d86c744 1.3px,transparent 1.4px);background-size:12px 12px}
+header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 16px;background:var(--sun);color:#16161d;border-bottom:4px solid #16161d}
+h1{font:400 34px/1 Bangers,'Comic Sans MS',cursive;margin:0;letter-spacing:1px;text-shadow:2px 2px 0 #fff}
+.tb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
+button{font:inherit;cursor:pointer;border:2.5px solid var(--bd);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 11px;box-shadow:2px 2px 0 var(--bd)}
+button:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--bd)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.pri{background:var(--acc);color:#fff}
+header label{display:flex;gap:6px;align-items:center;font-weight:600}
+input[type=color]{width:34px;height:30px;padding:1px;border:2.5px solid var(--bd);border-radius:6px;background:var(--card);cursor:pointer}
+.app{display:grid;grid-template-columns:250px 1fr 230px;gap:14px;padding:14px;align-items:start}
+aside{background:var(--card);border:3px solid var(--bd);border-radius:12px;padding:10px;position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1;padding:6px 2px;font-weight:700}
+.tabs button.on{background:var(--acc);color:#fff}
+#it{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#it button{padding:3px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;box-shadow:none;border-width:2px;line-height:1.1}
+#it svg{width:100%;height:auto;aspect-ratio:1;background:#fff;border-radius:5px}
+#pn{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.pn{margin:0;border:5px solid #16161d;background:#fff;box-shadow:6px 6px 0 var(--bd);position:relative;opacity:.85}
+.pn.on{opacity:1;outline:4px solid var(--acc);outline-offset:3px}
+.pn svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+.pn figcaption{position:absolute;left:0;top:0;background:#16161d;color:#fff;font:400 16px Bangers,cursive;padding:1px 8px;pointer-events:none}
+#pr h2{font:400 22px Bangers,cursive;margin:0 0 8px;letter-spacing:.5px}
+#pr .r{display:flex;flex-direction:column;gap:3px;margin-bottom:9px;font-weight:600;font-size:13px}
+#pr .r span{color:var(--mut);font-weight:400}
+#pr input[type=range]{width:100%;accent-color:var(--acc)}
+#pr textarea{width:100%;font:inherit;border:2.5px solid var(--bd);border-radius:6px;padding:5px;background:var(--card);color:var(--ink);resize:vertical}
+.bs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.bs button{font-size:12px;padding:5px 3px}
+.del{color:#e11d48}
+.hint{color:var(--mut);font-size:13px;margin:0}
+@media(max-width:1000px){.app{grid-template-columns:1fr}aside{position:static;max-height:none}#it{grid-template-columns:repeat(auto-fill,minmax(70px,1fr))}}
+</style></head><body>
+<header>
+<h1>Taller de Cómics</h1>
+<div class="tb">
+<button id="add" class="pri">+ Cuadro <span id="cnt"></span></button>
+<button id="rm">Quitar cuadro</button>
+<button id="clr">Vaciar cuadro</button>
+<label>Fondo del cuadro <input type="color" id="pbg" aria-label="Color de fondo del cuadro"></label>
+</div></header>
+<main class="app">
+<aside id="lib"><div class="tabs" id="tabs"></div><div id="it"></div></aside>
+<section id="pn" aria-label="Cuadros del cómic"></section>
+<aside id="pr">
+<p class="hint" id="emp">Toca un elemento dentro de un cuadro para moverlo y editarlo. Arrástralo para cambiar su posición.</p>
+<div id="ed" hidden>
+<h2 id="tt"></h2>
+<div class="r" id="rtx"><label for="txt">Texto</label><textarea id="txt" rows="3" maxlength="80"></textarea></div>
+<div class="r"><label for="c1" id="l1"></label><input type="color" id="c1"></div>
+<div class="r" id="r2"><label for="c2" id="l2"></label><input type="color" id="c2"></div>
+<div class="r"><label for="sz">Tamaño</label><input type="range" id="sz" min="0.2" max="5" step="0.05"></div>
+<div class="r"><label for="rt">Rotación</label><input type="range" id="rt" min="-180" max="180" step="1"></div>
+<div class="bs">
+<button id="fl">Voltear</button><button id="dp">Duplicar</button>
+<button id="fr">Al frente</button><button id="bk">Al fondo</button>
+<button id="dl" class="del" style="grid-column:span 2">Eliminar</button>
+</div></div>
+</aside>
+</main>
+<script>
+const $=s=>document.querySelector(s),esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const pts=(n,R,r)=>Array.from({length:2*n},(_,i)=>{const a=Math.PI*i/n-Math.PI/2,q=i%2?r:R;return(Math.cos(a)*q).toFixed(1)+','+(Math.sin(a)*q).toFixed(1)}).join(' ');
+const tx=(t,f,sz,x='')=>{const L=(t||'').split('\n'),n=L.length;return `<text text-anchor="middle" font-family="Bangers,'Comic Sans MS',cursive" font-size="${sz}" fill="${f}" ${x}>${L.map((l,i)=>`<tspan x="0" y="${((i-(n-1)/2)*sz*1.1+sz*.35).toFixed(1)}">${esc(l)}</tspan>`).join('')}</text>`};
+const K='#222',SK='#f1c27d';
+const person=(a,b)=>`<path d="M-14-4L-26 14M14-4L26 14" stroke="${b}" stroke-width="7" stroke-linecap="round"/><rect x="-12" y="18" width="9" height="28" rx="3" fill="#333"/><rect x="3" y="18" width="9" height="28" rx="3" fill="#333"/><rect x="-15" y="-10" width="30" height="34" rx="9" fill="${a}"/><circle cy="-26" r="16" fill="${b}"/><circle cx="-6" cy="-27" r="2" fill="${K}"/><circle cx="6" cy="-27" r="2" fill="${K}"/><path d="M-5-19q5 4 10 0" stroke="${K}" fill="none" stroke-width="1.5"/>`;
+const face=(a,inner)=>`<circle r="38" fill="${a}" stroke="${K}" stroke-width="3"/><g fill="${K}" stroke="${K}" stroke-linecap="round" stroke-width="4">${inner}</g>`;
+const eyes='<circle cx="-13" cy="-8" r="4" stroke="none"/><circle cx="13" cy="-8" r="4" stroke="none"/>';
+// z: capa (0 cielo … 3 objetos). c: e=escenario, p=personaje, t=texto
+const T={
+fondo:{c:'e',n:'Fondo liso',a:'#7ec8f0',l:['Color'],x:150,y:150,s:3,z:0,d:a=>`<rect x="-50" y="-50" width="100" height="100" fill="${a}"/>`},
+suelo:{c:'e',n:'Suelo',a:'#6bbf59',b:'#4a9a3d',l:['Suelo','Borde'],x:150,y:240,s:3,z:2,d:(a,b)=>`<rect x="-50" y="-20" width="100" height="40" fill="${a}"/><path d="M-50-20H50" stroke="${b}" stroke-width="2"/>`},
+madera:{c:'e',n:'Piso madera',a:'#c98a4b',b:'#8f5a2b',l:['Madera','Vetas'],x:150,y:240,s:3,z:2,d:(a,b)=>`<rect x="-50" y="-20" width="100" height="40" fill="${a}"/><path d="M-50-6H50M-50 8H50M-20-20V-6M20-6V8M-10 8V20" stroke="${b}" stroke-width="1.5"/>`},
+mar:{c:'e',n:'Mar',a:'#2f7fd1',b:'#a9d6ff',l:['Agua','Olas'],x:150,y:225,s:3,z:2,d:(a,b)=>`<rect x="-50" y="-25" width="100" height="50" fill="${a}"/><path d="M-50-8q12.5-10 25 0t25 0t25 0t25 0M-50 10q12.5-10 25 0t25 0t25 0t25 0" stroke="${b}" stroke-width="2" fill="none"/>`},
+camino:{c:'e',n:'Camino',a:'#555a66',b:'#ffd23f',l:['Asfalto','Líneas'],x:150,y:210,s:3,z:2,d:(a,b)=>`<polygon points="-14,-50 14,-50 50,50 -50,50" fill="${a}"/><g fill="${b}"><rect x="-1.5" y="-38" width="3" height="10"/><rect x="-3" y="-10" width="6" height="16"/><rect x="-5" y="25" width="10" height="22"/></g>`},
+montana:{c:'e',n:'Montaña',a:'#8a7fb8',b:'#fff',l:['Roca','Nieve'],y:170,s:2,z:1,d:(a,b)=>`<path d="M-50 40L0-40L50 40Z" fill="${a}"/><path d="M0-40L-13-14L-5-20L0-12L6-20L13-14Z" fill="${b}"/>`},
+sol:{c:'e',n:'Sol',a:'#ffd23f',b:'#ff9f1c',l:['Sol','Rayos'],s:1,d:(a,b)=>`<path d="M0-40V-48M0 40V48M-40 0H-48M40 0H48M28-28l6-6M-28 28l-6 6M28 28l6 6M-28-28l-6-6" stroke="${b}" stroke-width="5" stroke-linecap="round"/><circle r="26" fill="${a}"/>`},
+luna:{c:'e',n:'Luna',a:'#f4efc6',l:['Luna'],d:a=>`<path d="M8-40A40 40 0 0 0 8 40A50 50 0 0 1 8-40Z" fill="${a}"/>`},
+nube:{c:'e',n:'Nube',a:'#ffffff',l:['Nube'],s:1.4,d:a=>`<g fill="${a}" stroke="#b9c4d6" stroke-width="1.5"><circle cx="-18" cy="5" r="16"/><circle cx="2" cy="-6" r="22"/><circle cx="24" cy="6" r="15"/><rect x="-30" y="5" width="66" height="16" rx="8" stroke="none"/></g>`},
+estrella:{c:'e',n:'Estrella',a:'#ffe45c',b:'#e0a800',l:['Relleno','Borde'],s:.6,d:(a,b)=>`<polygon points="${pts(5,40,17)}" fill="${a}" stroke="${b}" stroke-width="3" stroke-linejoin="round"/>`},
+arbol:{c:'e',n:'Árbol',a:'#3d9a4a',b:'#7a4a25',l:['Hojas','Tronco'],d:(a,b)=>`<rect x="-6" y="5" width="12" height="40" fill="${b}"/><circle cy="-8" r="30" fill="${a}"/><circle cx="-14" cy="6" r="18" fill="${a}"/><circle cx="16" cy="6" r="18" fill="${a}"/>`},
+casa:{c:'e',n:'Casa',a:'#f2d16b',b:'#c0392b',l:['Paredes','Techo'],d:(a,b)=>`<rect x="-32" y="-5" width="64" height="48" fill="${a}"/><polygon points="-40,-5 0,-40 40,-5" fill="${b}"/><rect x="-22" y="18" width="16" height="25" fill="${b}"/><rect x="8" y="8" width="16" height="16" fill="#bfe6ff" stroke="${b}" stroke-width="2"/>`},
+edificio:{c:'e',n:'Edificio',a:'#7b8794',b:'#ffe98a',l:['Edificio','Ventanas'],d:(a,b)=>`<rect x="-25" y="-50" width="50" height="100" fill="${a}"/>`+[0,1,2,3].flatMap(r=>[0,1].map(c=>`<rect x="${-16+c*18}" y="${-40+r*22}" width="10" height="12" fill="${b}"/>`)).join('')},
+ventana:{c:'e',n:'Ventana',a:'#bfe6ff',b:'#8f5a2b',l:['Vidrio','Marco'],d:(a,b)=>`<rect x="-30" y="-30" width="60" height="60" fill="${b}"/><rect x="-25" y="-25" width="50" height="50" fill="${a}"/><path d="M0-25V25M-25 0H25" stroke="${b}" stroke-width="3"/>`},
+mesa:{c:'e',n:'Mesa',a:'#b9773a',b:'#7a4a25',l:['Tablero','Patas'],d:(a,b)=>`<rect x="-34" y="5" width="8" height="40" fill="${b}"/><rect x="26" y="5" width="8" height="40" fill="${b}"/><rect x="-42" y="-5" width="84" height="10" rx="2" fill="${a}"/>`},
+flor:{c:'e',n:'Flor',a:'#ff5da2',b:'#3d9a4a',l:['Pétalos','Tallo'],s:.9,d:(a,b)=>`<path d="M0-13V45" stroke="${b}" stroke-width="4"/><g fill="${a}"><circle cy="-26" r="10"/><circle cy="0" r="10"/><circle cx="-13" cy="-13" r="10"/><circle cx="13" cy="-13" r="10"/></g><circle cy="-13" r="7" fill="#ffd23f"/>`},
+persona:{c:'p',n:'Persona',a:'#e63946',b:SK,l:['Ropa','Piel'],d:person},
+heroe:{c:'p',n:'Superhéroe',a:'#3a86ff',b:'#ff3d7f',l:['Traje','Capa y antifaz'],d:(a,b)=>`<path d="M-16-10L-32 44L32 44L16-10Z" fill="${b}"/>`+person(a,SK)+`<rect x="-15" y="-33" width="30" height="9" rx="4" fill="${b}"/><path d="M-9-29h5M4-29h5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`},
+feliz:{c:'p',n:'Cara feliz',a:'#ffd23f',l:['Cara'],d:a=>face(a,eyes+'<path d="M-18 8Q0 30 18 8" fill="none"/>')},
+triste:{c:'p',n:'Cara triste',a:'#9ecbff',l:['Cara'],d:a=>face(a,eyes+'<path d="M-16 24Q0 8 16 24" fill="none"/><circle cx="-13" cy="6" r="3" fill="#4aa8ff" stroke="none"/>')},
+enojada:{c:'p',n:'Cara enojada',a:'#ff6b4a',l:['Cara'],d:a=>face(a,eyes+'<path d="M-22-20L-6-12M22-20L6-12M-14 22Q0 10 14 22" fill="none"/>')},
+sorpresa:{c:'p',n:'Sorpresa',a:'#c7f284',l:['Cara'],d:a=>face(a,eyes+'<ellipse cy="17" rx="8" ry="11" stroke="none"/>')},
+robot:{c:'p',n:'Robot',a:'#9aa5b1',b:'#4ad1ff',l:['Metal','Luces'],d:(a,b)=>`<path d="M0-38V-48" stroke="#333" stroke-width="3"/><circle cy="-50" r="4" fill="${b}"/><rect x="-32" y="4" width="9" height="26" rx="4" fill="${a}"/><rect x="23" y="4" width="9" height="26" rx="4" fill="${a}"/><rect x="-14" y="36" width="10" height="12" fill="#333"/><rect x="4" y="36" width="10" height="12" fill="#333"/><rect x="-20" y="0" width="40" height="36" rx="4" fill="${a}" stroke="#333" stroke-width="2"/><rect x="-26" y="-38" width="52" height="36" rx="6" fill="${a}" stroke="#333" stroke-width="2"/><circle cx="-11" cy="-21" r="7" fill="${b}"/><circle cx="11" cy="-21" r="7" fill="${b}"/><rect x="-10" y="-10" width="20" height="4" fill="#333"/>`},
+gato:{c:'p',n:'Gato',a:'#f39c4a',b:'#7bd88f',l:['Pelaje','Ojos'],d:(a,b)=>`<polygon points="-28,-14 -26,-46 -6,-28" fill="${a}"/><polygon points="28,-14 26,-46 6,-28" fill="${a}"/><ellipse rx="32" ry="28" fill="${a}"/><circle cx="-12" cy="-4" r="6" fill="${b}"/><circle cx="12" cy="-4" r="6" fill="${b}"/><ellipse cx="-12" cy="-4" rx="2" ry="5" fill="${K}"/><ellipse cx="12" cy="-4" rx="2" ry="5" fill="${K}"/><path d="M-3 8h6l-3 4z" fill="#ff8fa3"/><path d="M-32 6L-46 2M-32 12L-46 14M32 6L46 2M32 12L46 14" stroke="${K}" stroke-width="1.5"/>`},
+perro:{c:'p',n:'Perro',a:'#d9a066',b:'#7a4a25',l:['Pelaje','Orejas'],d:(a,b)=>`<ellipse cx="-30" cy="-6" rx="10" ry="22" fill="${b}" transform="rotate(15 -30 -6)"/><ellipse cx="30" cy="-6" rx="10" ry="22" fill="${b}" transform="rotate(-15 30 -6)"/><ellipse rx="28" ry="30" fill="${a}"/><ellipse cy="12" rx="15" ry="11" fill="#fff"/><ellipse cy="6" rx="6" ry="4" fill="${K}"/><circle cx="-10" cy="-8" r="4" fill="${K}"/><circle cx="10" cy="-8" r="4" fill="${K}"/><path d="M-5 20q5 8 10 0z" fill="#ff8fa3"/>`},
+fantasma:{c:'p',n:'Fantasma',a:'#ffffff',b:'#222222',l:['Cuerpo','Ojos'],d:(a,b)=>`<path d="M-30 40V-5A30 35 0 0 1 30-5V40L20 32L10 40L0 32L-10 40L-20 32Z" fill="${a}" stroke="#b9c4d6" stroke-width="2"/><circle cx="-10" cy="-8" r="5" fill="${b}"/><circle cx="10" cy="-8" r="5" fill="${b}"/><ellipse cy="10" rx="6" ry="8" fill="${b}"/>`},
+monstruo:{c:'p',n:'Monstruo',a:'#8e5be8',b:'#ffd23f',l:['Cuerpo','Cuernos'],d:(a,b)=>`<polygon points="-28,-30 -34,-52 -14,-38" fill="${b}"/><polygon points="28,-30 34,-52 14,-38" fill="${b}"/><path d="M-38 40Q-46-30 0-42Q46-30 38 40Z" fill="${a}"/><circle cy="-8" r="12" fill="#fff"/><circle cy="-8" r="5" fill="${K}"/><path d="M-20 16Q0 34 20 16Z" fill="${K}"/><path d="M-12 19l4 7 4-8zM4 18l4 8 4-7z" fill="#fff"/>`},
+corazon:{c:'p',n:'Corazón',a:'#ff3d5a',l:['Corazón'],d:a=>`<path d="M0 38C-50 4-36-32 0-14C36-32 50 4 0 38Z" fill="${a}" stroke="#a3122b" stroke-width="2.5"/>`},
+coche:{c:'p',n:'Coche',a:'#e63946',b:'#bfe6ff',l:['Carrocería','Ventanas'],d:(a,b)=>`<rect x="-44" y="0" width="88" height="24" rx="6" fill="${a}"/><path d="M-26 0L-16-22H16L28 0Z" fill="${a}"/><path d="M-20-3L-13-18H-2V-3ZM2-3V-18H13L21-3Z" fill="${b}"/><circle cx="-24" cy="26" r="10" fill="${K}"/><circle cx="24" cy="26" r="10" fill="${K}"/><circle cx="-24" cy="26" r="4" fill="#ccc"/><circle cx="24" cy="26" r="4" fill="#ccc"/>`},
+globo:{c:'t',n:'Globo de diálogo',a:'#ffffff',b:'#222222',l:['Globo','Letra'],txt:'¡Hola!',s:1.3,d:(a,b,t)=>`<ellipse rx="50" ry="30" fill="${a}" stroke="${K}" stroke-width="2.5"/><path d="M-14 27L-24 50L6 28Z" fill="${a}" stroke="${K}" stroke-width="2.5" stroke-linejoin="round"/><path d="M-12 28L4 29" stroke="${a}" stroke-width="4"/>`+tx(t,b,17)},
+pensar:{c:'t',n:'Pensamiento',a:'#ffffff',b:'#222222',l:['Nube','Letra'],txt:'Mmm…',s:1.3,d:(a,b,t)=>`<g fill="${a}" stroke="${K}" stroke-width="2.5"><circle cx="-26" cy="40" r="6"/><circle cx="-38" cy="50" r="3.5"/><ellipse rx="50" ry="30"/></g><ellipse rx="47" ry="27" fill="${a}"/>`+tx(t,b,17)},
+grito:{c:'t',n:'Grito',a:'#ffe45c',b:'#222222',l:['Explosión','Letra'],txt:'¡AH!',s:1.4,d:(a,b,t)=>`<polygon points="${pts(14,54,38)}" fill="${a}" stroke="${K}" stroke-width="3" stroke-linejoin="round"/>`+tx(t,b,24)},
+narra:{c:'t',n:'Narración',a:'#ffd23f',b:'#222222',l:['Recuadro','Letra'],txt:'Mientras\ntanto…',x:90,y:40,s:1.2,z:4,d:(a,b,t)=>`<rect x="-50" y="-22" width="100" height="44" fill="${a}" stroke="${K}" stroke-width="2.5"/>`+tx(t,b,14)},
+libre:{c:'t',n:'Texto libre',a:'#222222',l:['Color'],txt:'Texto',s:1.2,d:(a,_,t)=>tx(t,a,22)},
+onoma:{c:'t',n:'Onomatopeya',a:'#ff3d7f',b:'#222222',l:['Relleno','Contorno'],txt:'¡BOOM!',s:1.5,r:-10,d:(a,b,t)=>tx(t,a,36,`stroke="${b}" stroke-width="6" stroke-linejoin="round" paint-order="stroke"`)},
+};
+const CATS={e:'Escenarios',p:'Personajes',t:'Texto'};
+let panels=[],act=0,sel=null,uid=0,cat='e',drag=null;
+const cur=()=>panels[act]&&panels[act].els.find(e=>e.id===sel);
+const tf=e=>`translate(${e.x} ${e.y}) rotate(${e.r}) scale(${e.s*e.fx} ${e.s})`;
+const draw=(k,a,b,t)=>T[k].d(a,b,t);
+function mk(k){const d=T[k],fixed=d.y!=null,j=fixed?0:Math.round(Math.random()*40-20);
+return{id:++uid,t:k,x:(d.x??150)+j,y:(d.y??150)+j,s:d.s||1,r:d.r||0,fx:1,z:d.z??3,a:d.a,b:d.b||'#000000',txt:d.txt}}
+function add(k){const p=panels[act],e=mk(k);let i=p.els.length;while(i>0&&p.els[i-1].z>e.z)i--;p.els.splice(i,0,e);sel=e.id;render();ui()}
+function render(){
+$('#pn').innerHTML=panels.map((p,i)=>`<figure class="pn ${i==act?'on':''}" data-i="${i}"><svg viewBox="0 0 300 300" role="img" aria-label="Cuadro ${i+1}"><defs><clipPath id="c${i}"><rect width="300" height="300"/></clipPath></defs><g clip-path="url(#c${i})"><rect width="300" height="300" fill="${p.bg}"/>${p.els.map(e=>`<g data-id="${e.id}" transform="${tf(e)}" style="cursor:move">${draw(e.t,e.a,e.b,e.txt)}</g>`).join('')}</g></svg><figcaption>${i+1}</figcaption></figure>`).join('');
+const e=cur(),g=e&&document.querySelector(`.pn.on g[data-id="${e.id}"]`);
+if(g){const b=g.getBBox();g.insertAdjacentHTML('beforeend',`<rect x="${b.x-2}" y="${b.y-2}" width="${b.width+4}" height="${b.height+4}" fill="none" stroke="#ff3d7f" stroke-width="2" stroke-dasharray="5 3" vector-effect="non-scaling-stroke" pointer-events="none"/>`)}
+$('#cnt').textContent=panels.length+'/6';$('#add').disabled=panels.length>=6;$('#rm').disabled=panels.length<=1;}
+function ui(){const e=cur();$('#emp').hidden=!!e;$('#ed').hidden=!e;$('#pbg').value=panels[act].bg;if(!e)return;
+const d=T[e.t];$('#tt').textContent=d.n;$('#rtx').hidden=d.c!='t';$('#txt').value=e.txt||'';
+$('#l1').textContent=d.l[0];$('#c1').value=e.a;$('#r2').hidden=!d.l[1];if(d.l[1]){$('#l2').textContent=d.l[1];$('#c2').value=e.b}
+$('#sz').value=e.s;$('#rt').value=e.r;$('#fl').hidden=d.c=='t'}
+function tabs(){$('#tabs').innerHTML=Object.entries(CATS).map(([k,v])=>`<button class="${k==cat?'on':''}" data-c="${k}">${v}</button>`).join('');
+$('#it').innerHTML=Object.entries(T).filter(([,d])=>d.c==cat).map(([k,d])=>`<button data-k="${k}" title="${d.n}"><svg viewBox="-56 -56 112 112" overflow="hidden">${draw(k,d.a,d.b||'#000',d.txt)}</svg>${d.n}</button>`).join('')}
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(b){cat=b.dataset.c;tabs()}};
+$('#it').onclick=e=>{const b=e.target.closest('button');if(b)add(b.dataset.k)};
+const pos=(ev,svg)=>{const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())};
+$('#pn').addEventListener('pointerdown',ev=>{const f=ev.target.closest('.pn');if(!f)return;
+act=+f.dataset.i;const g=ev.target.closest('g[data-id]');sel=g?+g.dataset.id:null;render();ui();if(!g)return;
+const svg=document.querySelector(`.pn[data-i="${act}"] svg`),e=cur(),node=svg.querySelector(`g[data-id="${e.id}"]`),p0=pos(ev,svg),ox=e.x-p0.x,oy=e.y-p0.y;
+drag=m=>{const q=pos(m,svg);e.x=Math.round(q.x+ox);e.y=Math.round(q.y+oy);node.setAttribute('transform',tf(e))};ev.preventDefault()});
+addEventListener('pointermove',m=>drag&&drag(m));
+addEventListener('pointerup',()=>{drag=null});
+const upd=(k,v)=>{const e=cur();if(e){e[k]=v;render()}};
+$('#c1').oninput=e=>upd('a',e.target.value);$('#c2').oninput=e=>upd('b',e.target.value);
+$('#sz').oninput=e=>upd('s',+e.target.value);$('#rt').oninput=e=>upd('r',+e.target.value);
+$('#txt').oninput=e=>upd('txt',e.target.value);
+$('#fl').onclick=()=>{const e=cur();if(e){e.fx*=-1;render()}};
+$('#fr').onclick=()=>{const p=panels[act],e=cur();if(e){p.els.push(p.els.splice(p.els.indexOf(e),1)[0]);render()}};
+$('#bk').onclick=()=>{const p=panels[act],e=cur();if(e){p.els.unshift(p.els.splice(p.els.indexOf(e),1)[0]);render()}};
+$('#dp').onclick=()=>{const p=panels[act],e=cur();if(e){const c={...e,id:++uid,x:e.x+15,y:e.y+15};p.els.splice(p.els.indexOf(e)+1,0,c);sel=c.id;render()}};
+const del=()=>{const p=panels[act],e=cur();if(e){p.els.splice(p.els.indexOf(e),1);sel=null;render();ui()}};
+$('#dl').onclick=del;
+addEventListener('keydown',e=>{if(e.key=='Delete'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName))del()});
+$('#pbg').oninput=e=>{panels[act].bg=e.target.value;render()};
+$('#add').onclick=()=>{if(panels.length<6){panels.push({bg:'#ffffff',els:[]});act=panels.length-1;sel=null;render();ui()}};
+$('#rm').onclick=()=>{if(panels.length>1){panels.splice(act,1);act=Math.max(0,act-1);sel=null;render();ui()}};
+$('#clr').onclick=()=>{panels[act].els=[];sel=null;render();ui()};
+panels=[{bg:'#ffffff',els:[]}];tabs();
+['fondo','suelo','sol','persona','globo'].forEach(k=>{add(k);const e=cur();if(k=='sol'){e.x=235;e.y=55;e.s=.8}if(k=='persona'){e.x=110;e.y=185;e.s=1.5}if(k=='globo'){e.x=175;e.y=70;e.s=1.05;e.txt='¡Hola,\nmundo!'}});
+sel=null;render();ui();
+</script></body></html>
